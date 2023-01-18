@@ -124,9 +124,47 @@ def load_df_lieux():
         df_list.append(df[cols_to_keep])
     return pd.concat(df_list)
 
-df = load_df_usagers()
-df = format_gravity_column(df)
-df.to_csv('data/usagers.csv',index=False)
+def aggregate_and_save_traffic_dfs():
+    df_2020 = pd.read_csv('data/comptage-velo-donnees-compteurs-2020.csv',sep=';')
+    df_2021 = pd.read_csv('data/comptage-velo-donnees-compteurs-2021.csv',sep=';',low_memory=False)
+    df_2022 = pd.read_csv('data/comptage-velo-donnees-compteurs.csv',sep=';')
+    cols_to_keep = ['id_compteur','nom_compteur','id','name','sum_counts','date','installation_date','url_photos_n1','coordinates']
+    df_2022 = df_2022[cols_to_keep]
+    df_2021.columns = cols_to_keep
+    df_2020.columns = cols_to_keep
+    df_agg = pd.concat([df_2022,df_2021,df_2020])
+    df_agg.to_csv('data/comptages-velo-since-2020.csv',index=False)
+
+def load_df_traffic():
+    df_comptage = pd.read_csv('data/comptages-velo-since-2020.csv',low_memory=False)
+    localisations = pd.read_csv('data/localisations.csv')
+    localisations = localisations.drop_duplicates()
+    df_traffic=df_comptage.merge(localisations, how='left', on='id_compteur')
+    return df_traffic
+
+def format_columns_df_traffic(df_traffic):
+    df_traffic['year']=df_traffic['date'].str[:4]
+    df_traffic['month']=df_traffic['date'].str[5:7]
+    df_traffic['day']=df_traffic['date'].str[8:10]
+    df_traffic['hour']=df_traffic['date'].str[11:13]
+    date_col = df_traffic['date'].str[:10]
+    date_col =pd.to_datetime(date_col)
+    df_traffic['day_of_week']=date_col.dt.dayofweek+1
+
+    columns_to_drop=['nom_compteur_x',
+                 'id',
+                 'name',
+                'url_photos_n1',
+                'coordinates_x',
+                'date',
+                'nom_compteur_y',
+                'coordinates_y',
+                ]
+
+    df_traffic.drop(columns=columns_to_drop, inplace=True)
+    df_traffic['date'] = date_col
+    return df_traffic
+
 
 
     
