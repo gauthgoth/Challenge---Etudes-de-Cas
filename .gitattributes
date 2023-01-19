@@ -5,3 +5,4 @@ data/jours_feries_metropole.csv filter=lfs diff=lfs merge=lfs -text
 data/lieux.csv filter=lfs diff=lfs merge=lfs -text
 data/localisations.csv filter=lfs diff=lfs merge=lfs -text
 data/trafic-velos-since-2020.csv filter=lfs diff=lfs merge=lfs -text
+data filter=lfs diff=lfs merge=lfs -text
